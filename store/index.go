@@ -6,33 +6,44 @@ import (
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/shahinrahimi/teleprompt/models"
 )
 
 type SqliteStore struct {
-	logger *log.Logger
-	db     *sql.DB
+	l  *log.Logger
+	db *sql.DB
 }
 
 type Storage interface {
 }
 
-func NewSqliteStore(logger *log.Logger) *SqliteStore {
+func NewSqliteStore(l *log.Logger) (*SqliteStore, error) {
 	// create directory if needed
 	if err := os.MkdirAll("db", 0755); err != nil {
-		logger.Fatalf("Unable to create a directory for DB: %v", err)
+		l.Printf("Unable to create a directory for DB: %v", err)
+		return nil, err
 	}
 	db, err := sql.Open("sqlite3", "./db/mydb.db")
 	if err != nil {
-		logger.Fatalf("Unable to connect to DB: %v", err)
+		l.Printf("Unable to connect to DB: %v", err)
+		return nil, err
 	}
-	logger.Println("DB Connected!")
+	l.Println("DB Connected!")
 	return &SqliteStore{
-		logger: logger,
-		db:     db,
-	}
+		l:  l,
+		db: db,
+	}, nil
 }
 
 func (s *SqliteStore) Init() error {
+	if _, err := s.db.Exec(models.CREATE_TABLE_USERS); err != nil {
+		s.l.Fatalf("error creating users table: %v", err)
+		return err
+	}
+	if _, err := s.db.Exec(models.CREATE_TABLE_PROMPTS); err != nil {
+		s.l.Fatalf("error creating prompts table: %v", err)
+		return err
+	}
 	return nil
 }
 

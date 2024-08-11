@@ -17,7 +17,7 @@ const (
 			user_id INTEGER,
 			username TEXT,
 			is_admin bool,
-			created_at TIMESTAMP NOT NULL,
+			created_at TIMESTAMP NOT NULL
 		)
 	`
 )
