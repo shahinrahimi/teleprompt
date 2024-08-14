@@ -41,36 +41,13 @@ func (t *TelegramBot) receiveUpdates(ctx context.Context, us tgbotapi.UpdatesCha
 		case u := <-us:
 			t.handleUpdate(u)
 		}
-
 	}
 }
 
-func (t *TelegramBot) handleUpdate(u tgbotapi.Update) {
-	switch {
-	case u.Message != nil:
-		t.handleMessage(u.Message)
-	case u.CallbackQuery != nil:
-		t.handleButton(u.CallbackQuery)
-	}
-}
-
-func (t *TelegramBot) handleMessage(m *tgbotapi.Message) {
-	user := m.From
-	text := m.Text
-
-	t.l.Printf("user with id: `%d` wrote `%s`", user.ID, text)
-
-	return
-}
-
-func (t *TelegramBot) handleButton(q *tgbotapi.CallbackQuery) {
-	user := q.From
-	text := q.Message
-
-	t.l.Printf("user with id: `%d` wrote `%s`", user.ID, text)
-
-	return
-
+func (t *TelegramBot) sendMessage(userID int64, msgStr string) error {
+	msg := tgbotapi.NewMessage(userID, msgStr)
+	_, err := t.b.Send(msg)
+	return err
 }
 
 func (t *TelegramBot) Shutdown() {
