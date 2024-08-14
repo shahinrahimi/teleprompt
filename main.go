@@ -42,16 +42,24 @@ func main() {
 	}
 
 	// create a bot instance
-	t, err := bot.NewTelegramBot(l, s, apiKey)
+	b, err := bot.NewBot(l, s, apiKey)
 	if err != nil {
 		l.Fatalf("error creating a new telegram bot: %v", err)
 	}
+
+	// global middleware
+	b.Use(b.Logging)
+
+	// commands
+	start := b.NewRouter("start")
+	start.Use(b.CheckUser)
+	start.Handle(b.MakeHandlerBotFunc(b.HandleRegisterUser))
 
 	// create context bot to received updates and gracefully shutdown
 	ctx := context.WithoutCancel(context.Background())
 	go func() {
 		l.Println("Bot started and running and listen for updates.")
-		t.RunAndListen(ctx)
+		b.Start(ctx)
 	}()
 
 	// create signal
@@ -66,6 +74,6 @@ func main() {
 	// gracefully shutdown bot, waiting max 30 secs
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	t.Shutdown()
+	b.Shutdown()
 
 }
