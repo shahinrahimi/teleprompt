@@ -56,12 +56,12 @@ func main() {
 	newUserRouter.Handle("start", b.MakeHandlerBotFunc(b.HandleRegisterUser))
 
 	usersRouter := b.NewRouter("users")
-	usersRouter.Use(b.RequireAuth)
+	usersRouter.Use(b.RequireAuthentication)
 	usersRouter.Handle("add", b.MakeHandlerBotFunc(b.HandleAddPrompt))
 
 	adminRouter := b.NewRouter("admin")
-	adminRouter.Use(b.RequireAuth)
-	adminRouter.Use(b.RequireAdmin)
+	adminRouter.Use(b.RequireAuthentication)
+	adminRouter.Use(b.RequireAuthorization)
 	adminRouter.Handle("kick", b.MakeHandlerBotFunc(b.HandleViewUsers))
 
 	// create context bot to received updates and gracefully shutdown

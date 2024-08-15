@@ -68,6 +68,7 @@ func (b *Bot) Start(ctx context.Context) {
 	go b.receiveUpdates(ctx, us)
 }
 
+// receivedUpdates check sign
 func (b *Bot) receiveUpdates(ctx context.Context, us tgbotapi.UpdatesChannel) {
 	for {
 		select {
@@ -105,12 +106,15 @@ func (b *Bot) handleUpdate(u tgbotapi.Update) {
 
 }
 
-func (t *Bot) SendMessage(userID int64, msgStr string) error {
+// SendMessage send message string to user and error does not returned
+func (b *Bot) SendMessage(userID int64, msgStr string) {
 	msg := tgbotapi.NewMessage(userID, msgStr)
-	_, err := t.api.Send(msg)
-	return err
+	if _, err := b.api.Send(msg); err != nil {
+		b.l.Printf("error in sending message to user: %v", err)
+	}
 }
 
+// Shutdown stops the go routine which receives updates by simply call the StopReceivingUpdates
 func (b *Bot) Shutdown() {
 	b.l.Println("Bot shutting down...")
 	b.api.StopReceivingUpdates()
