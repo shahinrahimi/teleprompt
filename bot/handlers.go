@@ -16,6 +16,14 @@ func (b *Bot) HandleRegisterUser(u *tgbotapi.Update) error {
 	return nil
 }
 
+func (b *Bot) HandleAddPrompt(u *tgbotapi.Update) error {
+	return nil
+}
+
+func (b *Bot) HandleViewUsers(u *tgbotapi.Update) error {
+	return nil
+}
+
 func (b *Bot) MakeHandlerBotFunc(f BotHandler) Handler {
 	return func(u *tgbotapi.Update) {
 		if err := f(u); err != nil {

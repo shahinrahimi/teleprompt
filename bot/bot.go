@@ -18,7 +18,7 @@ type Bot struct {
 
 type Router struct {
 	middlewares []Middleware
-	handler     Handler
+	handlers    map[string]Handler
 }
 
 type Handler func(*tgbotapi.Update)
@@ -44,9 +44,11 @@ func (b *Bot) Use(m Middleware) {
 	b.globalMiddlewares = append(b.globalMiddlewares, m)
 }
 
-func (b *Bot) NewRouter(command string) *Router {
-	router := &Router{}
-	b.routers[command] = router
+func (b *Bot) NewRouter(routerName string) *Router {
+	router := &Router{
+		handlers: make(map[string]Handler),
+	}
+	b.routers[routerName] = router
 	return router
 }
 
@@ -54,8 +56,8 @@ func (r *Router) Use(m Middleware) {
 	r.middlewares = append(r.middlewares, m)
 }
 
-func (r *Router) Handle(handler Handler) {
-	r.handler = handler
+func (r *Router) Handle(command string, handler Handler) {
+	r.handlers[command] = handler
 }
 
 func (b *Bot) Start(ctx context.Context) {
@@ -80,20 +82,27 @@ func (b *Bot) receiveUpdates(ctx context.Context, us tgbotapi.UpdatesChannel) {
 func (b *Bot) handleUpdate(u tgbotapi.Update) {
 
 	command := u.Message.Command()
-	if router, exists := b.routers[command]; exists && router.handler != nil {
-		// Combine global and route-specific middlewares
-		finalHandler := router.handler
-		for i := len(router.middlewares) - 1; i >= 0; i-- {
-			finalHandler = router.middlewares[i](finalHandler)
+	for _, router := range b.routers {
+		if handler, exists := router.handlers[command]; exists {
+			// Start with the actual handler
+			finalHandler := handler
+
+			// Apply route-specific middlewares in reverse order
+			for i := len(router.middlewares) - 1; i >= 0; i-- {
+				finalHandler = router.middlewares[i](finalHandler)
+			}
+			// Apply global middlewares in reverse order
+			for i := len(b.globalMiddlewares) - 1; i >= 0; i-- {
+				finalHandler = b.globalMiddlewares[i](finalHandler)
+			}
+			// Execute the final composed handler
+			finalHandler(&u)
+			return
 		}
-		for i := len(b.globalMiddlewares) - 1; i >= 0; i-- {
-			finalHandler = b.globalMiddlewares[i](finalHandler)
-		}
-		finalHandler(&u)
-	} else {
-		// Handle unknown command
-		b.l.Printf("Unknown command: %s", command)
 	}
+	// Handle unknown command
+	b.l.Printf("Unknown command: %s", command)
+
 }
 
 func (t *Bot) SendMessage(userID int64, msgStr string) error {

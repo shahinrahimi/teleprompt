@@ -51,9 +51,18 @@ func main() {
 	b.Use(b.Logging)
 
 	// commands
-	start := b.NewRouter("start")
-	start.Use(b.CheckUser)
-	start.Handle(b.MakeHandlerBotFunc(b.HandleRegisterUser))
+	newUserRouter := b.NewRouter("newUsers")
+	newUserRouter.Use(b.CheckRegistered)
+	newUserRouter.Handle("start", b.MakeHandlerBotFunc(b.HandleRegisterUser))
+
+	usersRouter := b.NewRouter("users")
+	usersRouter.Use(b.RequireAuth)
+	usersRouter.Handle("add", b.MakeHandlerBotFunc(b.HandleAddPrompt))
+
+	adminRouter := b.NewRouter("admin")
+	adminRouter.Use(b.RequireAuth)
+	adminRouter.Use(b.RequireAdmin)
+	adminRouter.Handle("kick", b.MakeHandlerBotFunc(b.HandleViewUsers))
 
 	// create context bot to received updates and gracefully shutdown
 	ctx := context.WithoutCancel(context.Background())
