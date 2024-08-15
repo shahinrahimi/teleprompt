@@ -27,6 +27,11 @@ func (b *Bot) HandleUnregisterUser(u *tgbotapi.Update, ctx context.Context) erro
 }
 
 func (b *Bot) HandleAddPrompt(u *tgbotapi.Update, ctx context.Context) error {
+	prompt := ctx.Value(models.KeyPrompt{}).(models.Prompt)
+	user := ctx.Value(models.KeyUser{}).(models.User)
+	prompt.UserID = user.UserID
+	b.l.Printf("prompt title: %s body: %s", prompt.Title, prompt.Body)
+	// if err := b.s.CreatePrompt()
 	return nil
 }
 

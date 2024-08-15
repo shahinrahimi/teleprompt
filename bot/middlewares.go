@@ -5,6 +5,7 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/shahinrahimi/teleprompt/models"
+	"github.com/shahinrahimi/teleprompt/utils"
 )
 
 // Logging middleware log the command that received
@@ -66,7 +67,9 @@ func (b *Bot) ProvideUser(next Handler) Handler {
 func (b *Bot) ProvidePrompt(next Handler) Handler {
 	return func(u *tgbotapi.Update, ctx context.Context) {
 		var prompt models.Prompt
-		prompt.Title = u.Message.Command()
+		parts := utils.ParseCommand(u.Message.Text)
+		prompt.Title = parts[0]
+		prompt.Body = parts[1]
 		c := context.WithValue(ctx, models.KeyPrompt{}, prompt)
 		next(u, c)
 	}

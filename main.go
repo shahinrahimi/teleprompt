@@ -59,6 +59,7 @@ func main() {
 
 	usersRouter := b.NewRouter("users")
 	usersRouter.Use(b.RequireAuthentication)
+	usersRouter.Use(b.ProvidePrompt)
 	usersRouter.Handle("add", b.MakeHandlerBotFunc(b.HandleAddPrompt))
 	usersRouter.Handle("unstart", b.MakeHandlerBotFunc(b.HandleUnregisterUser))
 
