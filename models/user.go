@@ -10,6 +10,8 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type KeyUser struct{}
+
 const (
 	CREATE_TABLE_USERS string = `
 		CREATE TABLE IF NOT EXISTS users (

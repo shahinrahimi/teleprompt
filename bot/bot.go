@@ -21,8 +21,8 @@ type Router struct {
 	handlers    map[string]Handler
 }
 
-type Handler func(*tgbotapi.Update)
-type BotHandler func(*tgbotapi.Update) error
+type Handler func(*tgbotapi.Update, context.Context)
+type ErrorHandler func(*tgbotapi.Update, context.Context) error
 type Middleware func(Handler) Handler
 
 func NewBot(l *log.Logger, s store.Storage, apiKey string) (*Bot, error) {
@@ -75,12 +75,12 @@ func (b *Bot) receiveUpdates(ctx context.Context, us tgbotapi.UpdatesChannel) {
 		case <-ctx.Done():
 			return
 		case u := <-us:
-			b.handleUpdate(u)
+			b.handleUpdate(u, ctx)
 		}
 	}
 }
 
-func (b *Bot) handleUpdate(u tgbotapi.Update) {
+func (b *Bot) handleUpdate(u tgbotapi.Update, ctx context.Context) {
 
 	command := u.Message.Command()
 	for _, router := range b.routers {
@@ -97,7 +97,7 @@ func (b *Bot) handleUpdate(u tgbotapi.Update) {
 				finalHandler = b.globalMiddlewares[i](finalHandler)
 			}
 			// Execute the final composed handler
-			finalHandler(&u)
+			finalHandler(&u, ctx)
 			return
 		}
 	}

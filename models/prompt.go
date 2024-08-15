@@ -10,6 +10,8 @@ type Prompt struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type KeyPrompt struct{}
+
 const (
 	CREATE_TABLE_PROMPTS string = `
 		CREATE TABLE IF NOT EXISTS prompts (

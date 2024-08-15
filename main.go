@@ -49,6 +49,8 @@ func main() {
 
 	// global middleware
 	b.Use(b.Logging)
+	// add user to context
+	b.Use(b.ProvideUser)
 
 	// commands
 	newUserRouter := b.NewRouter("newUsers")
@@ -58,6 +60,7 @@ func main() {
 	usersRouter := b.NewRouter("users")
 	usersRouter.Use(b.RequireAuthentication)
 	usersRouter.Handle("add", b.MakeHandlerBotFunc(b.HandleAddPrompt))
+	usersRouter.Handle("unstart", b.MakeHandlerBotFunc(b.HandleUnregisterUser))
 
 	adminRouter := b.NewRouter("admin")
 	adminRouter.Use(b.RequireAuthentication)
