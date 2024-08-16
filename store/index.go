@@ -15,15 +15,18 @@ type SqliteStore struct {
 }
 
 type Storage interface {
-	GetUser(user_id int64) (*models.User, error)
+	GetUser(userID int64) (*models.User, error)
 	GetUsers() ([]models.User, error)
 	CreateUser(u *models.User) error
-	DeleteUser(user_id int64) error
+	DeleteUser(userID int64) error
 
 	GetPrompt(id int) (*models.Prompt, error)
 	GetPrompts() ([]models.Prompt, error)
+	GetPromptsByUserID(userID int64) ([]models.Prompt, error)
+
 	CreatePrompt(p *models.Prompt) error
 	DeletePrompt(id int) error
+	DeletePromptsByUserID(userID int64) error
 }
 
 func NewSqliteStore(l *log.Logger) (*SqliteStore, error) {

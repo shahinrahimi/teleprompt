@@ -30,7 +30,7 @@ const (
 	SELECT_PROMPTS_BY_USER_ID       string = `SELECT id, user_id, title, body, created_at FROM prompts WHERE user_id = ?`
 	INSERT_PROMPT                   string = `INSERT INTO prompts (user_id, title, body, created_at) VALUES (?, ?, ?, ?)`
 	DELETE_PROMPT                   string = `DELETE FROM prompts WHERE id = ?`
-	DELETE_PROMPT_BY_USER_ID        string = `DELETE FROM prompts WHERE user_id = ?`
+	DELETE_PROMPTS_BY_USER_ID       string = `DELETE FROM prompts WHERE user_id = ?`
 )
 
 // ToArgs returns user_id, title, body, created_at as value

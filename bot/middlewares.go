@@ -2,10 +2,11 @@ package bot
 
 import (
 	"context"
+	"regexp"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/shahinrahimi/teleprompt/models"
-	"github.com/shahinrahimi/teleprompt/utils"
 )
 
 // Logging middleware log the command that received
@@ -67,9 +68,22 @@ func (b *Bot) ProvideUser(next Handler) Handler {
 func (b *Bot) ProvidePrompt(next Handler) Handler {
 	return func(u *tgbotapi.Update, ctx context.Context) {
 		var prompt models.Prompt
-		parts := utils.ParseCommand(u.Message.Text)
-		prompt.Title = parts[0]
-		prompt.Body = parts[1]
+		args := u.Message.CommandArguments()
+		re := regexp.MustCompile(`title:\s*(.*?)\s*body:\s*(.*)`)
+		matches := re.FindStringSubmatch(args)
+		if len(matches) < 2 {
+			b.SendMessage(u.Message.From.ID, "invalid prompt\nUsage: title: This is the title body: This is the body")
+			return
+		}
+		title := strings.TrimSpace(matches[0])
+		body := strings.TrimSpace(matches[1])
+		if title == "" || body == "" {
+			b.SendMessage(u.Message.From.ID, "invalid prompt\nUsage: title: This is the title body: This is the body")
+			return
+		}
+		prompt.Title = title
+		prompt.Body = body
+		prompt.UserID = u.Message.From.ID
 		c := context.WithValue(ctx, models.KeyPrompt{}, prompt)
 		next(u, c)
 	}

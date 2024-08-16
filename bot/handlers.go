@@ -29,10 +29,30 @@ func (b *Bot) HandleUnregisterUser(u *tgbotapi.Update, ctx context.Context) erro
 func (b *Bot) HandleAddPrompt(u *tgbotapi.Update, ctx context.Context) error {
 	prompt := ctx.Value(models.KeyPrompt{}).(models.Prompt)
 	user := ctx.Value(models.KeyUser{}).(models.User)
-	prompt.UserID = user.UserID
 	b.l.Printf("prompt title: %s body: %s", prompt.Title, prompt.Body)
-	// if err := b.s.CreatePrompt()
+	if err := b.s.CreatePrompt(&prompt); err != nil {
+		b.l.Printf("error creating a new prompt: %v", err)
+		b.SendMessage(user.UserID, "error processing user request")
+	}
 	return nil
+}
+
+func (b *Bot) HandleViewPrompts(u *tgbotapi.Update, ctx context.Context) error {
+	user := ctx.Value(models.KeyUser{}).(models.User)
+
+	prompts, err := b.s.GetPromptsByUserID(user.UserID)
+	if err != nil {
+		b.l.Printf("error getting prompts for user: %v", err)
+		b.SendMessage(user.UserID, "error processing user request")
+		return err
+	}
+	msg := ""
+	for _, p := range prompts {
+		msg = msg + " " + p.Title
+	}
+	b.SendMessage(user.UserID, msg)
+	return nil
+
 }
 
 func (b *Bot) HandleDeletePrompt(u *tgbotapi.Update, ctx context.Context) error {
