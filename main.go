@@ -53,20 +53,29 @@ func main() {
 	b.Use(b.ProvideUser)
 
 	// commands
-	newUserRouter := b.NewRouter("newUsers")
-	newUserRouter.Use(b.CheckRegistered)
-	newUserRouter.Handle("start", b.MakeHandlerBotFunc(b.HandleRegisterUser))
+	vr := b.NewRouter("visitor")
+	vr.Use(b.CheckRegistered)
+	vr.Handle("start", b.MakeHandlerBotFunc(b.HandleRegisterUser))
 
-	usersRouter := b.NewRouter("users")
-	usersRouter.Use(b.RequireAuthentication)
-	usersRouter.Use(b.ProvidePrompt)
-	usersRouter.Handle("add", b.MakeHandlerBotFunc(b.HandleAddPrompt))
-	usersRouter.Handle("unstart", b.MakeHandlerBotFunc(b.HandleUnregisterUser))
+	ap := b.NewRouter("add-prompt")
+	ap.Use(b.RequireAuthentication)
+	ap.Use(b.ProvidePrompt)
+	ap.Handle("add", b.MakeHandlerBotFunc(b.HandleAddPrompt))
 
-	adminRouter := b.NewRouter("admin")
-	adminRouter.Use(b.RequireAuthentication)
-	adminRouter.Use(b.RequireAuthorization)
-	adminRouter.Handle("kick", b.MakeHandlerBotFunc(b.HandleViewUsers))
+	dp := b.NewRouter("delete-prompt")
+	dp.Use(b.RequireAuthentication)
+	dp.Handle("delete", b.MakeHandlerBotFunc(b.HandleDeletePrompt))
+
+	vp := b.NewRouter("view-prompt")
+	vp.Use(b.RequireAuthentication)
+	vp.Handle("view", b.MakeHandlerBotFunc(b.HandleViewPrompts))
+
+	ur := b.NewRouter("users")
+	ur.Use(b.RequireAuthentication)
+	ur.Use(b.RequireAuthorization)
+	ur.Handle("view_users", b.MakeHandlerBotFunc(b.HandleViewUsers))
+	ur.Handle("view_user", b.MakeHandlerBotFunc(b.HandleViewUsers))
+	ur.Handle("kick", b.MakeHandlerBotFunc(b.HandleUnregisterUser))
 
 	// create context bot to received updates and gracefully shutdown
 	ctx := context.WithoutCancel(context.Background())
